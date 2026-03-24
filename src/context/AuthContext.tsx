@@ -110,8 +110,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
-    } catch (error) {
+      toast.success('Вы успешно вошли!');
+    } catch (error: any) {
       console.error('Login error:', error);
+      if (error.code === 'auth/popup-blocked') {
+        toast.error('Пожалуйста, разрешите всплывающие окна для входа');
+      } else if (error.code === 'auth/unauthorized-domain') {
+        toast.error('Этот домен не разрешен в настройках Firebase');
+      } else if (error.code === 'auth/operation-not-allowed') {
+        toast.error('Вход через Google не включен в консоли Firebase');
+      } else {
+        toast.error(`Ошибка входа: ${error.message}`);
+      }
     }
   };
 

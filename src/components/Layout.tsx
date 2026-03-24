@@ -147,7 +147,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </AnimatePresence>
 
       {/* Main Content */}
-      <main className="pt-20 pb-12 px-4 md:px-8 max-w-7xl mx-auto">
+      <main className="pt-28 md:pt-36 pb-12 px-4 md:px-8 max-w-7xl mx-auto">
         {children}
       </main>
 

@@ -128,43 +128,43 @@ export default function Admin() {
   return (
     <div className="space-y-12">
       {/* Admin Header */}
-      <section className="relative p-12 bg-[#ff4e00]/10 rounded-[40px] border border-[#ff4e00]/20 overflow-hidden group">
-        <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:opacity-20 transition-opacity">
-          <ShieldAlert size={240} className="text-[#ff4e00]" />
+      <section className="relative p-6 md:p-12 bg-[#ff4e00]/10 rounded-[32px] md:rounded-[40px] border border-[#ff4e00]/20 overflow-hidden group">
+        <div className="absolute top-0 right-0 p-6 md:p-12 opacity-10 group-hover:opacity-20 transition-opacity">
+          <ShieldAlert size={120} className="text-[#ff4e00] md:w-[240px] md:h-[240px]" />
         </div>
         
         <div className="relative space-y-4">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold text-[#ff4e00] uppercase tracking-[0.3em] flex items-center gap-2">
-              <Zap size={14} fill="#ff4e00" /> Панель управления
+            <span className="text-[8px] md:text-[10px] font-bold text-[#ff4e00] uppercase tracking-[0.3em] flex items-center gap-2">
+              <Zap size={12} fill="#ff4e00" /> Панель управления
             </span>
-            <h1 className="text-5xl font-bold tracking-tighter uppercase leading-none">Админ-центр</h1>
-            <p className="text-white/40 font-medium">Управление пользователями, контентом и статистикой платформы</p>
+            <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase leading-none">Админ-центр</h1>
+            <p className="text-white/40 text-xs md:text-base font-medium">Управление пользователями, контентом и статистикой платформы</p>
           </div>
         </div>
       </section>
 
       {/* Stats Overview */}
-      <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         {[
           { label: 'Пользователи', value: users.length, icon: Users, color: 'text-blue-400' },
           { label: 'Фильмы', value: movies.length, icon: Film, color: 'text-[#ff4e00]' },
           { label: 'Комментарии', value: comments.length, icon: MessageSquare, color: 'text-green-400' },
           { label: 'Просмотры', value: '1.2K', icon: TrendingUp, color: 'text-purple-400' },
         ].map((stat) => (
-          <div key={stat.label} className="p-8 bg-white/5 rounded-[32px] border border-white/5 space-y-2">
+          <div key={stat.label} className="p-4 md:p-8 bg-white/5 rounded-[20px] md:rounded-[32px] border border-white/5 space-y-1 md:space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">{stat.label}</span>
-              <stat.icon size={20} className={stat.color} />
+              <span className="text-[7px] md:text-[10px] font-bold text-white/20 uppercase tracking-widest truncate mr-1">{stat.label}</span>
+              <stat.icon size={14} className={stat.color} />
             </div>
-            <span className="text-4xl font-bold tracking-tighter uppercase">{stat.value}</span>
+            <span className="text-xl md:text-4xl font-bold tracking-tighter uppercase">{stat.value}</span>
           </div>
         ))}
       </section>
 
       {/* Admin Tabs */}
       <section className="space-y-8">
-        <div className="flex items-center gap-8 border-b border-white/10 pb-4">
+        <div className="flex items-center gap-4 md:gap-8 border-b border-white/10 pb-4 overflow-x-auto no-scrollbar">
           {[
             { id: 'stats', label: 'Статистика', icon: BarChart3 },
             { id: 'users', label: 'Пользователи', icon: Users },
@@ -175,12 +175,12 @@ export default function Admin() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
               className={cn(
-                "flex items-center gap-3 pb-4 -mb-4 transition-all relative group",
+                "flex items-center gap-2 md:gap-3 pb-4 -mb-4 transition-all relative group whitespace-nowrap",
                 activeTab === tab.id ? "text-[#ff4e00]" : "text-white/40 hover:text-white"
               )}
             >
-              <tab.icon size={18} />
-              <span className="text-sm font-bold uppercase tracking-widest">{tab.label}</span>
+              <tab.icon size={16} />
+              <span className="text-[10px] md:text-sm font-bold uppercase tracking-widest">{tab.label}</span>
               {activeTab === tab.id && (
                 <motion.div 
                   layoutId="activeAdminTab"
@@ -214,40 +214,40 @@ export default function Admin() {
               className="space-y-6"
             >
               {activeTab === 'users' && (
-                <div className="bg-white/5 rounded-[32px] border border-white/5 overflow-hidden">
-                  <table className="w-full text-left border-collapse">
+                <div className="bg-white/5 rounded-[24px] md:rounded-[32px] border border-white/5 overflow-x-auto no-scrollbar">
+                  <table className="w-full text-left border-collapse min-w-[800px]">
                     <thead>
                       <tr className="border-b border-white/10 bg-white/5">
-                        <th className="p-6 text-[10px] font-bold text-white/20 uppercase tracking-widest">Пользователь</th>
-                        <th className="p-6 text-[10px] font-bold text-white/20 uppercase tracking-widest">Email</th>
-                        <th className="p-6 text-[10px] font-bold text-white/20 uppercase tracking-widest">Роль</th>
-                        <th className="p-6 text-[10px] font-bold text-white/20 uppercase tracking-widest">Очки</th>
-                        <th className="p-6 text-[10px] font-bold text-white/20 uppercase tracking-widest text-right">Действия</th>
+                        <th className="p-4 md:p-6 text-[10px] font-bold text-white/20 uppercase tracking-widest">Пользователь</th>
+                        <th className="p-4 md:p-6 text-[10px] font-bold text-white/20 uppercase tracking-widest">Email</th>
+                        <th className="p-4 md:p-6 text-[10px] font-bold text-white/20 uppercase tracking-widest">Роль</th>
+                        <th className="p-4 md:p-6 text-[10px] font-bold text-white/20 uppercase tracking-widest">Очки</th>
+                        <th className="p-4 md:p-6 text-[10px] font-bold text-white/20 uppercase tracking-widest text-right">Действия</th>
                       </tr>
                     </thead>
                     <tbody>
                       {users.map((u) => (
                         <tr key={u.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                          <td className="p-6 flex items-center gap-4">
-                            <img src={u.photoURL} alt="" className="w-10 h-10 rounded-xl border border-white/10" />
-                            <span className="font-bold text-sm uppercase tracking-tight">{u.displayName}</span>
+                          <td className="p-4 md:p-6 flex items-center gap-4">
+                            <img src={u.photoURL} alt="" className="w-8 h-8 md:w-10 md:h-10 rounded-xl border border-white/10" />
+                            <span className="font-bold text-xs md:text-sm uppercase tracking-tight">{u.displayName}</span>
                           </td>
-                          <td className="p-6 text-sm text-white/40 font-medium">{u.email}</td>
-                          <td className="p-6">
+                          <td className="p-4 md:p-6 text-xs md:text-sm text-white/40 font-medium">{u.email}</td>
+                          <td className="p-4 md:p-6">
                             <span className={cn(
-                              "text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest border",
+                              "text-[8px] md:text-[10px] font-bold px-2 md:px-3 py-1 rounded-full uppercase tracking-widest border",
                               u.role === 'admin' ? "bg-[#ff4e00]/10 text-[#ff4e00] border-[#ff4e00]/20" : "bg-white/5 text-white/40 border-white/10"
                             )}>
                               {u.role}
                             </span>
                           </td>
-                          <td className="p-6 font-bold text-sm">{u.points}</td>
-                          <td className="p-6 text-right space-x-2">
+                          <td className="p-4 md:p-6 font-bold text-xs md:text-sm">{u.points}</td>
+                          <td className="p-4 md:p-6 text-right space-x-1 md:space-x-2">
                             <button className="p-2 hover:bg-white/10 rounded-xl transition-all text-white/40 hover:text-white">
-                              <Edit3 size={18} />
+                              <Edit3 size={16} />
                             </button>
                             <button className="p-2 hover:bg-red-500/10 rounded-xl transition-all text-white/40 hover:text-red-500">
-                              <Trash2 size={18} />
+                              <Trash2 size={16} />
                             </button>
                           </td>
                         </tr>
@@ -259,7 +259,7 @@ export default function Admin() {
 
               {activeTab === 'movies' && (
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
                     <div className="relative flex-1 max-w-md group">
                       <input 
                         type="text" 
@@ -272,29 +272,29 @@ export default function Admin() {
                     </div>
                     <button 
                       onClick={() => setIsAddModalOpen(true)}
-                      className="bg-[#ff4e00] hover:bg-[#ff6a26] text-white px-6 py-4 rounded-2xl font-bold flex items-center gap-2 transition-all transform hover:scale-105 active:scale-95 text-xs uppercase tracking-widest"
+                      className="bg-[#ff4e00] hover:bg-[#ff6a26] text-white px-6 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95 text-[10px] md:text-xs uppercase tracking-widest"
                     >
                       <Plus size={18} /> Добавить фильм
                     </button>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                     {movies
                       .filter(m => m.title.toLowerCase().includes(movieFilter.toLowerCase()))
                       .map((m) => (
-                        <div key={m.id} className="p-6 bg-white/5 rounded-3xl border border-white/5 flex gap-4 group">
-                        <img src={m.posterPath} alt="" className="w-20 h-28 rounded-xl object-cover border border-white/10" />
+                        <div key={m.id} className="p-4 md:p-6 bg-white/5 rounded-2xl md:rounded-3xl border border-white/5 flex gap-4 group">
+                        <img src={m.posterPath} alt="" className="w-16 h-24 md:w-20 md:h-28 rounded-xl object-cover border border-white/10" />
                         <div className="flex-1 space-y-2">
-                          <h3 className="font-bold text-sm uppercase tracking-tight line-clamp-1 group-hover:text-[#ff4e00] transition-colors">{m.title}</h3>
-                          <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">{m.tmdbId}</p>
+                          <h3 className="font-bold text-xs md:text-sm uppercase tracking-tight line-clamp-1 group-hover:text-[#ff4e00] transition-colors">{m.title}</h3>
+                          <p className="text-[8px] md:text-[10px] text-white/40 font-bold uppercase tracking-widest">{m.tmdbId}</p>
                           <div className="flex gap-2 pt-2">
                             <button className="p-2 bg-white/5 hover:bg-white/10 rounded-xl transition-all text-white/40 hover:text-white border border-white/5">
-                              <Edit3 size={16} />
+                              <Edit3 size={14} />
                             </button>
                             <button 
                               onClick={() => deleteMovie(m.id)}
                               className="p-2 bg-white/5 hover:bg-red-500/10 rounded-xl transition-all text-white/40 hover:text-red-500 border border-white/5"
                             >
-                              <Trash2 size={16} />
+                              <Trash2 size={14} />
                             </button>
                           </div>
                         </div>
@@ -305,19 +305,19 @@ export default function Admin() {
               )}
 
               {activeTab === 'stats' && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  <div className="p-12 bg-white/5 rounded-[40px] border border-white/5 flex flex-col items-center justify-center space-y-6 text-center">
-                    <BarChart3 size={64} className="text-[#ff4e00]" />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+                  <div className="p-8 md:p-12 bg-white/5 rounded-[32px] md:rounded-[40px] border border-white/5 flex flex-col items-center justify-center space-y-4 md:space-y-6 text-center">
+                    <BarChart3 size={48} className="text-[#ff4e00] md:w-16 md:h-16" />
                     <div className="space-y-2">
-                      <h3 className="text-2xl font-bold tracking-tighter uppercase">Аналитика активности</h3>
-                      <p className="text-white/40 font-medium max-w-xs mx-auto">Здесь будет отображаться график просмотров и регистраций за последние 30 дней</p>
+                      <h3 className="text-xl md:text-2xl font-bold tracking-tighter uppercase">Аналитика активности</h3>
+                      <p className="text-white/40 text-xs md:text-base font-medium max-w-xs mx-auto">Здесь будет отображаться график просмотров и регистраций за последние 30 дней</p>
                     </div>
                   </div>
-                  <div className="p-12 bg-white/5 rounded-[40px] border border-white/5 flex flex-col items-center justify-center space-y-6 text-center">
-                    <Database size={64} className="text-[#ff4e00]" />
+                  <div className="p-8 md:p-12 bg-white/5 rounded-[32px] md:rounded-[40px] border border-white/5 flex flex-col items-center justify-center space-y-4 md:space-y-6 text-center">
+                    <Database size={48} className="text-[#ff4e00] md:w-16 md:h-16" />
                     <div className="space-y-2">
-                      <h3 className="text-2xl font-bold tracking-tighter uppercase">Состояние базы</h3>
-                      <p className="text-white/40 font-medium max-w-xs mx-auto">Все системы работают в штатном режиме. База данных синхронизирована с TMDb.</p>
+                      <h3 className="text-xl md:text-2xl font-bold tracking-tighter uppercase">Состояние базы</h3>
+                      <p className="text-white/40 text-xs md:text-base font-medium max-w-xs mx-auto">Все системы работают в штатном режиме. База данных синхронизирована с TMDb.</p>
                     </div>
                   </div>
                 </div>
@@ -326,22 +326,22 @@ export default function Admin() {
               {activeTab === 'comments' && (
                 <div className="space-y-4">
                   {comments.map((c) => (
-                    <div key={c.id} className="p-6 bg-white/5 rounded-3xl border border-white/5 flex items-center justify-between gap-6">
+                    <div key={c.id} className="p-4 md:p-6 bg-white/5 rounded-2xl md:rounded-3xl border border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 md:gap-6">
                       <div className="flex items-center gap-4 flex-1">
-                        <img src={c.userPhotoURL} alt="" className="w-10 h-10 rounded-xl border border-white/10" />
+                        <img src={c.userPhotoURL} alt="" className="w-8 h-8 md:w-10 md:h-10 rounded-xl border border-white/10" />
                         <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm uppercase tracking-tight">{c.userDisplayName}</span>
-                            <span className="text-[10px] text-white/20 font-bold uppercase tracking-widest">ID: {c.movieId}</span>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-bold text-xs md:text-sm uppercase tracking-tight">{c.userDisplayName}</span>
+                            <span className="text-[8px] md:text-[10px] text-white/20 font-bold uppercase tracking-widest">ID: {c.movieId}</span>
                           </div>
-                          <p className="text-sm text-white/60 font-medium line-clamp-1">{c.text}</p>
+                          <p className="text-xs md:text-sm text-white/60 font-medium line-clamp-2 sm:line-clamp-1">{c.text}</p>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <button className="p-3 bg-green-500/10 hover:bg-green-500/20 text-green-500 rounded-2xl transition-all border border-green-500/10">
+                      <div className="flex gap-2 w-full sm:w-auto">
+                        <button className="flex-1 sm:flex-none p-3 bg-green-500/10 hover:bg-green-500/20 text-green-500 rounded-2xl transition-all border border-green-500/10 flex items-center justify-center">
                           <Check size={18} />
                         </button>
-                        <button className="p-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-2xl transition-all border border-red-500/10">
+                        <button className="flex-1 sm:flex-none p-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-2xl transition-all border border-red-500/10 flex items-center justify-center">
                           <X size={18} />
                         </button>
                       </div>

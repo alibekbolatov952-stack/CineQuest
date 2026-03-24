@@ -49,7 +49,7 @@ export default function Home() {
         <motion.section 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative h-[80vh] rounded-[40px] overflow-hidden group"
+          className="relative h-[60vh] md:h-[80vh] rounded-[32px] md:rounded-[40px] overflow-hidden group"
         >
           <img 
             src={`https://image.tmdb.org/t/p/original${featured.backdrop_path}`} 
@@ -57,20 +57,20 @@ export default function Home() {
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-[20s] group-hover:scale-110"
             referrerPolicy="no-referrer"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0502] via-[#0a0502]/40 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0a0502] via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0502] via-[#0a0502]/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0a0502] via-transparent to-transparent hidden md:block" />
           
-          <div className="absolute bottom-12 left-8 md:left-16 max-w-2xl space-y-6">
+          <div className="absolute bottom-6 left-6 right-6 md:bottom-12 md:left-16 max-w-2xl space-y-4 md:space-y-6">
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              className="flex items-center gap-3"
+              className="flex items-center gap-2 md:gap-3"
             >
-              <span className="bg-[#ff4e00] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5">
+              <span className="bg-[#ff4e00] text-white text-[8px] md:text-[10px] font-bold px-2 md:px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5">
                 <Flame size={12} fill="white" /> Featured
               </span>
-              <span className="bg-white/10 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5 border border-white/10">
+              <span className="bg-white/10 backdrop-blur-md text-white text-[8px] md:text-[10px] font-bold px-2 md:px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5 border border-white/10">
                 <Star size={12} className="text-[#ff4e00]" fill="#ff4e00" /> {featured.vote_average.toFixed(1)}
               </span>
             </motion.div>
@@ -79,7 +79,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9]"
+              className="text-3xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9] break-words"
             >
               {featured.title}
             </motion.h1>
@@ -88,7 +88,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="text-white/60 text-lg line-clamp-3 font-medium leading-relaxed"
+              className="text-white/60 text-xs md:text-lg line-clamp-3 font-medium leading-relaxed"
             >
               {featured.overview}
             </motion.p>
@@ -97,19 +97,19 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="flex flex-wrap items-center gap-4 pt-4"
+              className="flex flex-wrap items-center gap-3 md:gap-4 pt-2 md:pt-4"
             >
               <Link 
                 to={`/movie/${featured.id}`}
-                className="bg-[#ff4e00] hover:bg-[#ff6a26] text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 transition-all transform hover:scale-105 active:scale-95 shadow-2xl shadow-[#ff4e00]/20"
+                className="flex-1 sm:flex-none bg-[#ff4e00] hover:bg-[#ff6a26] text-white px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold flex items-center justify-center gap-2 md:gap-3 transition-all transform hover:scale-105 active:scale-95 shadow-2xl shadow-[#ff4e00]/20 text-xs md:text-base"
               >
-                <Play fill="white" size={20} /> СМОТРЕТЬ СЕЙЧАС
+                <Play fill="white" size={18} /> СМОТРЕТЬ СЕЙЧАС
               </Link>
               <Link 
                 to={`/movie/${featured.id}`}
-                className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 transition-all border border-white/10"
+                className="flex-1 sm:flex-none bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold flex items-center justify-center gap-2 md:gap-3 transition-all border border-white/10 text-xs md:text-base"
               >
-                <Info size={20} /> ПОДРОБНЕЕ
+                <Info size={18} /> ПОДРОБНЕЕ
               </Link>
             </motion.div>
           </div>

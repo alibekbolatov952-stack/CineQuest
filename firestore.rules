@@ -104,7 +104,7 @@ service cloud.firestore {
     }
 
     function isValidMovie(data) {
-      return hasOnlyAllowedFields(['tmdbId', 'title', 'overview', 'posterPath', 'backdropPath', 'releaseDate', 'rating', 'genres', 'kodikId', 'trailerUrl', 'addedAt']) &&
+      return hasOnlyAllowedFields(['tmdbId', 'title', 'overview', 'posterPath', 'backdropPath', 'releaseDate', 'rating', 'genres', 'kodikId', 'trailerUrl', 'addedAt', 'mediaType']) &&
              (data.tmdbId is string || data.tmdbId is int) &&
              data.title is string && data.title.size() > 0 && data.title.size() < 200;
     }

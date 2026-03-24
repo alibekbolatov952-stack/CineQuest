@@ -9,6 +9,8 @@ import { Play, Heart, Share2, Star, Clock, Calendar, MessageSquare, Send, Zap, I
 import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 import MovieCard from '../components/MovieCard';
+import { AnimePlayer } from '../components/AnimePlayer';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { Comment } from '../types';
 import { cn } from '../lib/utils';
 
@@ -21,9 +23,46 @@ export default function Movie() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [showPlayer, setShowPlayer] = useState(false);
-  const [activeServer, setActiveServer] = useState<'server1' | 'server2' | 'server3' | 'server4' | 'server5'>('server1');
+  const [playerProgress, setPlayerProgress] = useState(0);
   const { user, profile, updatePoints, favorites, toggleFavorite } = useAuth();
   const isFavorite = id ? favorites.includes(id) : false;
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // Check if message is from our player
+      const data = event.data;
+      if (!data || !data.key) return;
+
+      switch (data.key) {
+        case 'kodik_player_time_update':
+          const time = data.value;
+          setPlayerProgress(time);
+          // Update progress in Firestore every 10 seconds or so to avoid too many writes
+          if (user && id && time % 10 === 0) {
+            const historyRef = doc(db, 'history', `${user.uid}_${id}`);
+            setDoc(historyRef, { progress: time, watchedAt: serverTimestamp() }, { merge: true })
+              .catch(err => handleFirestoreError(err, OperationType.WRITE, 'history'));
+          }
+          break;
+        case 'kodik_player_play':
+          console.log('Player started');
+          break;
+        case 'kodik_player_pause':
+          console.log('Player paused');
+          break;
+        case 'kodik_player_video_ended':
+          console.log('Video ended');
+          if (user) updatePoints(20); // Bonus points for finishing a movie
+          break;
+        case 'tunime_error':
+          console.error('Player error:', data.value);
+          break;
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [id, user, updatePoints]);
 
   useEffect(() => {
     if (!id) return;
@@ -31,14 +70,25 @@ export default function Movie() {
     const loadData = async () => {
       setLoading(true);
       try {
-        const details = await getMovieDetails(id);
+        // Try fetching as movie first
+        let details;
+        let type: 'movie' | 'tv' = 'movie';
+        try {
+          details = await getMovieDetails(id, 'movie');
+          type = 'movie';
+        } catch (e) {
+          // If movie fails, try as tv show
+          details = await getMovieDetails(id, 'tv');
+          type = 'tv';
+        }
+        
         setMovie(details);
         
-        const recs = await getMovieRecommendations(id);
+        const recs = await getMovieRecommendations(id, type);
         setRecommendations(recs?.results?.slice(0, 6) || []);
 
         // AI Summary
-        const summary = await getMovieSummary(details.title, details.overview);
+        const summary = await getMovieSummary(details.title || details.name, details.overview);
         setAiSummary(summary || '');
 
         // Check if favorite
@@ -122,69 +172,69 @@ export default function Movie() {
   return (
     <div className="space-y-12">
       {/* Backdrop & Info */}
-      <section className="relative min-h-[70vh] rounded-[40px] overflow-hidden group">
+      <section className="relative min-h-[60vh] md:min-h-[70vh] rounded-[32px] md:rounded-[40px] overflow-hidden group">
         <img 
           src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`} 
           alt={movie.title}
           className="absolute inset-0 w-full h-full object-cover"
           referrerPolicy="no-referrer"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0502] via-[#0a0502]/60 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0502] via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0502] via-[#0a0502]/80 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0502] via-transparent to-transparent hidden md:block" />
         
-        <div className="absolute bottom-12 left-8 md:left-16 max-w-4xl space-y-8">
-          <div className="flex flex-wrap items-center gap-4">
-            <span className="bg-[#ff4e00] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5">
+        <div className="absolute bottom-6 left-6 right-6 md:bottom-12 md:left-16 max-w-4xl space-y-4 md:space-y-8">
+          <div className="flex flex-wrap items-center gap-2 md:gap-4">
+            <span className="bg-[#ff4e00] text-white text-[8px] md:text-[10px] font-bold px-2 md:px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5">
               <Zap size={12} fill="white" /> HD Quality
             </span>
-            <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+            <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2 md:px-3 py-1 rounded-full border border-white/10">
               <Star size={14} className="text-[#ff4e00]" fill="#ff4e00" />
-              <span className="text-xs font-bold tracking-widest">{movie.vote_average.toFixed(1)}</span>
+              <span className="text-[10px] md:text-xs font-bold tracking-widest">{movie.vote_average.toFixed(1)}</span>
             </div>
-            <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+            <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2 md:px-3 py-1 rounded-full border border-white/10">
               <Clock size={14} className="text-white/60" />
-              <span className="text-xs font-bold tracking-widest text-white/60">{movie.runtime} МИН</span>
+              <span className="text-[10px] md:text-xs font-bold tracking-widest text-white/60">{movie.runtime} МИН</span>
             </div>
-            <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+            <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2 md:px-3 py-1 rounded-full border border-white/10">
               <Calendar size={14} className="text-white/60" />
-              <span className="text-xs font-bold tracking-widest text-white/60">{movie.release_date?.split('-')[0]}</span>
+              <span className="text-[10px] md:text-xs font-bold tracking-widest text-white/60">{movie.release_date?.split('-')[0]}</span>
             </div>
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9]">
+          <h1 className="text-3xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9] break-words">
             {movie.title}
           </h1>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5 md:gap-2">
             {movie.genres?.map((genre: any) => (
-              <span key={genre.id} className="text-[10px] font-bold text-white/40 uppercase tracking-widest border border-white/10 px-3 py-1 rounded-full">
+              <span key={genre.id} className="text-[8px] md:text-[10px] font-bold text-white/40 uppercase tracking-widest border border-white/10 px-2 md:px-3 py-1 rounded-full">
                 {genre.name}
               </span>
             ))}
           </div>
 
-          <p className="text-white/60 text-lg line-clamp-4 font-medium leading-relaxed max-w-2xl">
+          <p className="text-white/60 text-xs md:text-lg line-clamp-3 md:line-clamp-4 font-medium leading-relaxed max-w-2xl">
             {movie.overview}
           </p>
 
-          <div className="flex flex-wrap items-center gap-4 pt-4">
+          <div className="flex flex-wrap items-center gap-3 md:gap-4 pt-2 md:pt-4">
             <button 
               onClick={startWatching}
-              className="bg-[#ff4e00] hover:bg-[#ff6a26] text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 transition-all transform hover:scale-105 active:scale-95 shadow-2xl shadow-[#ff4e00]/20"
+              className="flex-1 sm:flex-none bg-[#ff4e00] hover:bg-[#ff6a26] text-white px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold flex items-center justify-center gap-2 md:gap-3 transition-all transform hover:scale-105 active:scale-95 shadow-2xl shadow-[#ff4e00]/20 text-xs md:text-base"
             >
-              <Play fill="white" size={20} /> СМОТРЕТЬ
+              <Play fill="white" size={18} /> СМОТРЕТЬ
             </button>
             <button 
               onClick={handleToggleFavorite}
               className={cn(
-                "bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 transition-all border border-white/10",
+                "flex-1 sm:flex-none bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold flex items-center justify-center gap-2 md:gap-3 transition-all border border-white/10 text-xs md:text-base",
                 isFavorite && "text-[#ff4e00] border-[#ff4e00]/50"
               )}
             >
-              <Heart size={20} fill={isFavorite ? "#ff4e00" : "none"} /> {isFavorite ? 'В ИЗБРАННОМ' : 'В ИЗБРАННОЕ'}
+              <Heart size={18} fill={isFavorite ? "#ff4e00" : "none"} /> {isFavorite ? 'В ИЗБРАННОМ' : 'В ИЗБРАННОЕ'}
             </button>
-            <button className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-4 rounded-2xl transition-all border border-white/10">
-              <Share2 size={20} />
+            <button className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-3 md:p-4 rounded-xl md:rounded-2xl transition-all border border-white/10">
+              <Share2 size={18} />
             </button>
           </div>
         </div>
@@ -206,77 +256,14 @@ export default function Movie() {
               <Zap size={24} className="rotate-45" />
             </button>
             <div className="w-full h-full max-w-6xl flex flex-col gap-4">
-              <div className="flex items-center justify-between px-4">
-                <div className="flex gap-4">
-                  <button 
-                    onClick={() => setActiveServer('server1')}
-                    className={cn(
-                      "px-6 py-2 rounded-xl font-bold text-xs uppercase tracking-widest transition-all",
-                      activeServer === 'server1' ? "bg-[#ff4e00] text-white" : "bg-white/5 text-white/40 hover:bg-white/10"
-                    )}
-                  >
-                    Сервер 1
-                  </button>
-                  <button 
-                    onClick={() => setActiveServer('server2')}
-                    className={cn(
-                      "px-6 py-2 rounded-xl font-bold text-xs uppercase tracking-widest transition-all",
-                      activeServer === 'server2' ? "bg-[#ff4e00] text-white" : "bg-white/5 text-white/40 hover:bg-white/10"
-                    )}
-                  >
-                    Сервер 2
-                  </button>
-                  <button 
-                    onClick={() => setActiveServer('server3')}
-                    className={cn(
-                      "px-6 py-2 rounded-xl font-bold text-xs uppercase tracking-widest transition-all",
-                      activeServer === 'server3' ? "bg-[#ff4e00] text-white" : "bg-white/5 text-white/40 hover:bg-white/10"
-                    )}
-                  >
-                    Сервер 3 (RU)
-                  </button>
-                  <button 
-                    onClick={() => setActiveServer('server4')}
-                    className={cn(
-                      "px-6 py-2 rounded-xl font-bold text-xs uppercase tracking-widest transition-all",
-                      activeServer === 'server4' ? "bg-[#ff4e00] text-white" : "bg-white/5 text-white/40 hover:bg-white/10"
-                    )}
-                  >
-                    Сервер 4
-                  </button>
-                  <button 
-                    onClick={() => setActiveServer('server5')}
-                    className={cn(
-                      "px-6 py-2 rounded-xl font-bold text-xs uppercase tracking-widest transition-all",
-                      activeServer === 'server5' ? "bg-[#ff4e00] text-white" : "bg-white/5 text-white/40 hover:bg-white/10"
-                    )}
-                  >
-                    Сервер 5 (CDN)
-                  </button>
-                </div>
-                <div className="flex items-center gap-2 text-white/20">
-                  <Info size={14} />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">Если не работает, смените сервер</span>
-                </div>
-              </div>
-              <div className="flex-1 bg-white/5 rounded-[40px] overflow-hidden border border-white/10 relative shadow-2xl shadow-black">
-                <iframe 
-                  src={
-                    activeServer === 'server1' 
-                      ? `https://v2.vidsrc.me/embed/${movie.id}` 
-                      : activeServer === 'server2'
-                      ? `https://vidsrc.to/embed/movie/${movie.id}`
-                      : activeServer === 'server3'
-                      ? `https://kinobox.tv/embed/tmdb/${movie.id}`
-                      : activeServer === 'server4'
-                      ? `https://player.embed-api.stream/?id=${movie.id}`
-                      : `https://videocdn.tv/embed/movie/${movie.id}?api_token=cdn1_ZH67NHKOFUJ7AMXS6Q6FGMEUMB0VB2`
-                  } 
-                  className="w-full h-full"
-                  allowFullScreen
-                  frameBorder="0"
+              <ErrorBoundary>
+                <AnimePlayer 
+                  tmdbId={movie.id.toString()} 
+                  shikimoriId={movie.external_ids?.shikimori_id}
+                  imdbId={movie.external_ids?.imdb_id}
+                  title={movie.title || movie.name}
                 />
-              </div>
+              </ErrorBoundary>
             </div>
           </motion.div>
         )}

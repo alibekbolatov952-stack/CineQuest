@@ -28,25 +28,46 @@ export async function fetchFromTMDB(endpoint: string, params: Record<string, str
 }
 
 export async function getPopularMovies() {
-  return fetchFromTMDB('/movie/popular');
+  const movies = await fetchFromTMDB('/movie/popular');
+  const tv = await fetchFromTMDB('/tv/popular');
+  return {
+    results: [
+      ...(movies?.results || []).map((m: any) => ({ ...m, media_type: 'movie', title: m.title || m.name })),
+      ...(tv?.results || []).map((t: any) => ({ ...t, media_type: 'tv', title: t.title || t.name }))
+    ].sort((a, b) => b.popularity - a.popularity)
+  };
 }
 
 export async function getTrendingMovies() {
-  return fetchFromTMDB('/trending/movie/week');
+  const data = await fetchFromTMDB('/trending/all/week');
+  return {
+    results: (data?.results || []).map((m: any) => ({ 
+      ...m, 
+      title: m.title || m.name,
+      media_type: m.media_type || (m.title ? 'movie' : 'tv')
+    }))
+  };
 }
 
 export async function searchMovies(query: string) {
-  return fetchFromTMDB('/search/movie', { query });
+  const movies = await fetchFromTMDB('/search/movie', { query });
+  const tv = await fetchFromTMDB('/search/tv', { query });
+  return {
+    results: [
+      ...(movies?.results || []).map((m: any) => ({ ...m, media_type: 'movie', title: m.title || m.name })),
+      ...(tv?.results || []).map((t: any) => ({ ...t, media_type: 'tv', title: t.title || t.name }))
+    ]
+  };
 }
 
-export async function getMovieDetails(id: string) {
-  return fetchFromTMDB(`/movie/${id}`);
+export async function getMovieDetails(id: string, type: 'movie' | 'tv' = 'movie') {
+  return fetchFromTMDB(`/${type}/${id}`, { append_to_response: 'external_ids' });
 }
 
-export async function getMovieVideos(id: string) {
-  return fetchFromTMDB(`/movie/${id}/videos`);
+export async function getMovieVideos(id: string, type: 'movie' | 'tv' = 'movie') {
+  return fetchFromTMDB(`/${type}/${id}/videos`);
 }
 
-export async function getMovieRecommendations(id: string) {
-  return fetchFromTMDB(`/movie/${id}/recommendations`);
+export async function getMovieRecommendations(id: string, type: 'movie' | 'tv' = 'movie') {
+  return fetchFromTMDB(`/${type}/${id}/recommendations`);
 }

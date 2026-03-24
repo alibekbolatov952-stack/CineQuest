@@ -74,51 +74,53 @@ export default function Search() {
   return (
     <div className="space-y-12">
       {/* Search Header */}
-      <section className="relative p-12 bg-white/5 rounded-[40px] border border-white/5 overflow-hidden group">
-        <div className="absolute top-0 right-0 p-12 opacity-5 group-hover:opacity-10 transition-opacity">
-          <SearchIcon size={240} className="text-[#ff4e00]" />
+      <section className="relative p-6 md:p-12 bg-white/5 rounded-[32px] md:rounded-[40px] border border-white/5 overflow-hidden group">
+        <div className="absolute top-0 right-0 p-6 md:p-12 opacity-5 group-hover:opacity-10 transition-opacity">
+          <SearchIcon size={120} className="text-[#ff4e00] md:w-[240px] md:h-[240px]" />
         </div>
         
-        <div className="relative space-y-8 max-w-3xl mx-auto text-center">
+        <div className="relative space-y-6 md:space-y-8 max-w-3xl mx-auto text-center">
           <div className="space-y-2">
-            <span className="text-[10px] font-bold text-[#ff4e00] uppercase tracking-[0.3em] flex items-center justify-center gap-2">
-              <Sparkles size={14} /> Умный поиск
+            <span className="text-[8px] md:text-[10px] font-bold text-[#ff4e00] uppercase tracking-[0.3em] flex items-center justify-center gap-2">
+              <Sparkles size={12} /> Умный поиск
             </span>
-            <h1 className="text-5xl font-bold tracking-tighter uppercase leading-none">Найдите свой квест</h1>
-            <p className="text-white/40 font-medium">Ищите по названию или выберите настроение для ИИ-рекомендаций</p>
+            <h1 className="text-2xl md:text-5xl font-bold tracking-tighter uppercase leading-none">Найдите свой квест</h1>
+            <p className="text-white/40 text-[10px] md:text-base font-medium">Ищите по названию или выберите настроение для ИИ-рекомендаций</p>
           </div>
 
-          <form onSubmit={handleSearch} className="relative group/input">
-            <input 
-              type="text" 
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Введите название фильма..."
-              className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 pl-16 text-white placeholder:text-white/20 focus:outline-none focus:border-[#ff4e00]/50 transition-all font-medium text-lg"
-            />
-            <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within/input:text-[#ff4e00] transition-colors" size={24} />
+          <form onSubmit={handleSearch} className="relative group/input flex flex-col sm:block gap-3">
+            <div className="relative flex-1">
+              <input 
+                type="text" 
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Введите название фильма..."
+                className="w-full bg-white/5 border border-white/10 rounded-xl md:rounded-3xl p-3.5 md:p-6 pl-10 md:pl-16 text-white placeholder:text-white/20 focus:outline-none focus:border-[#ff4e00]/50 transition-all font-medium text-xs md:text-lg"
+              />
+              <SearchIcon className="absolute left-3.5 md:left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within/input:text-[#ff4e00] transition-colors" size={18} />
+            </div>
             <button 
               type="submit"
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-[#ff4e00] hover:bg-[#ff6a26] text-white px-6 py-3 rounded-2xl font-bold transition-all transform hover:scale-105 active:scale-95 shadow-xl shadow-[#ff4e00]/20"
+              className="sm:absolute sm:right-3 sm:top-1/2 sm:-translate-y-1/2 bg-[#ff4e00] hover:bg-[#ff6a26] text-white px-5 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold transition-all transform hover:scale-105 active:scale-95 shadow-xl shadow-[#ff4e00]/20 text-[10px] md:text-sm uppercase tracking-widest"
             >
               ПОИСК
             </button>
           </form>
 
-          <div className="flex flex-wrap items-center justify-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4">
             {moods.map((mood) => (
               <button 
                 key={mood.id}
                 onClick={() => handleMoodSearch(mood.label)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-2xl border transition-all transform hover:scale-105 active:scale-95",
+                  "flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl md:rounded-2xl border transition-all transform hover:scale-105 active:scale-95",
                   selectedMood === mood.label 
                     ? "bg-[#ff4e00] border-[#ff4e00] text-white" 
                     : "bg-white/5 border-white/10 text-white/40 hover:text-white hover:bg-white/10"
                 )}
               >
-                <mood.icon size={16} className={selectedMood === mood.label ? "text-white" : mood.color} />
-                <span className="text-[10px] font-bold uppercase tracking-widest">{mood.label}</span>
+                <mood.icon size={14} className={selectedMood === mood.label ? "text-white" : mood.color} />
+                <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest">{mood.label}</span>
               </button>
             ))}
           </div>
@@ -127,20 +129,20 @@ export default function Search() {
 
       {/* Results */}
       <section className="space-y-8">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-1">
-            <h2 className="text-3xl font-bold tracking-tighter uppercase">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tighter uppercase">
               {isMoodSearch ? `Рекомендации для настроения: ${selectedMood}` : query ? `Результаты поиска: ${query}` : 'Популярные жанры'}
             </h2>
-            <p className="text-white/40 text-xs font-bold uppercase tracking-widest">Найдено {results.length} фильмов</p>
+            <p className="text-white/40 text-[10px] md:text-xs font-bold uppercase tracking-widest">Найдено {results.length} фильмов</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {genres.slice(0, 5).map((genre) => (
               <button 
                 key={genre.id}
                 onClick={() => setSelectedGenre(genre.id)}
                 className={cn(
-                  "px-4 py-2 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all",
+                  "px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl border text-[8px] md:text-[10px] font-bold uppercase tracking-widest transition-all",
                   selectedGenre === genre.id 
                     ? "bg-white text-black border-white" 
                     : "bg-white/5 border-white/10 text-white/40 hover:text-white"

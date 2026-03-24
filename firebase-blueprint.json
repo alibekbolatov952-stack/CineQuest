@@ -32,9 +32,11 @@
         "rating": { "type": "number" },
         "genres": { "type": "array", "items": { "type": "string" } },
         "kodikId": { "type": "string" },
-        "trailerUrl": { "type": "string" }
+        "trailerUrl": { "type": "string" },
+        "mediaType": { "type": "string", "enum": ["movie", "tv"] },
+        "addedAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["tmdbId", "title"]
+      "required": ["tmdbId", "title", "mediaType"]
     },
     "favorites": {
       "title": "Favorite",

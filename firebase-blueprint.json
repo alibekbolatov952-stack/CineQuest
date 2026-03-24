@@ -1,0 +1,98 @@
+{
+  "entities": {
+    "users": {
+      "title": "User",
+      "description": "User profile and stats",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user"] },
+        "points": { "type": "integer" },
+        "tokens": { "type": "integer" },
+        "level": { "type": "integer" },
+        "achievements": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "movies": {
+      "title": "Movie",
+      "description": "Movie details and metadata",
+      "type": "object",
+      "properties": {
+        "tmdbId": { "type": "string" },
+        "title": { "type": "string" },
+        "overview": { "type": "string" },
+        "posterPath": { "type": "string" },
+        "backdropPath": { "type": "string" },
+        "releaseDate": { "type": "string" },
+        "rating": { "type": "number" },
+        "genres": { "type": "array", "items": { "type": "string" } },
+        "kodikId": { "type": "string" },
+        "trailerUrl": { "type": "string" }
+      },
+      "required": ["tmdbId", "title"]
+    },
+    "favorites": {
+      "title": "Favorite",
+      "description": "User's favorite movies",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "movieId": { "type": "string" },
+        "addedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "movieId"]
+    },
+    "history": {
+      "title": "History",
+      "description": "User's watch history",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "movieId": { "type": "string" },
+        "watchedAt": { "type": "string", "format": "date-time" },
+        "progress": { "type": "number" }
+      },
+      "required": ["userId", "movieId"]
+    },
+    "comments": {
+      "title": "Comment",
+      "description": "User comments on movies",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "movieId": { "type": "string" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "likes": { "type": "integer" }
+      },
+      "required": ["userId", "movieId", "text"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "users",
+      "description": "User profiles"
+    },
+    "/movies/{movieId}": {
+      "schema": "movies",
+      "description": "Movie metadata"
+    },
+    "/favorites/{favoriteId}": {
+      "schema": "favorites",
+      "description": "User favorites"
+    },
+    "/history/{historyId}": {
+      "schema": "history",
+      "description": "User watch history"
+    },
+    "/comments/{commentId}": {
+      "schema": "comments",
+      "description": "Movie comments"
+    }
+  }
+}

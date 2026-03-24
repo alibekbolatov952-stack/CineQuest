@@ -1,0 +1,5 @@
+{
+  "name": "CineQuest",
+  "description": "A gamified movie streaming and catalog platform with AI recommendations, achievements, and social features.",
+  "requestFramePermissions": []
+}

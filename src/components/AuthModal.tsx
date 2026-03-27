@@ -15,7 +15,8 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [posters, setPosters] = useState<string[]>([]);
-  const { login } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const { login, loginWithEmail, registerWithEmail } = useAuth();
 
   useEffect(() => {
     if (isOpen) {
@@ -30,8 +31,28 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   }, [isOpen]);
 
   const handleGoogleLogin = async () => {
-    await login();
-    onClose();
+    setIsLoading(true);
+    try {
+      await login();
+      onClose();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!email || !password) return;
+    setIsLoading(true);
+    try {
+      if (mode === 'login') {
+        await loginWithEmail(email, password);
+      } else {
+        await registerWithEmail(email, password);
+      }
+      onClose();
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -50,58 +71,55 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className="relative w-full max-w-[480px] bg-[#0a0502]/80 backdrop-blur-3xl rounded-[48px] overflow-hidden border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.8)]"
+            className="relative w-full max-w-[440px] bg-[#0a0502] rounded-[40px] overflow-hidden border border-white/10 shadow-2xl"
           >
             {/* Background Posters */}
-            <div className="absolute inset-0 opacity-40 pointer-events-none overflow-hidden">
+            <div className="absolute inset-0 opacity-70 pointer-events-none overflow-hidden">
               <motion.div 
                 animate={{ 
-                  y: [0, -400, 0],
+                  y: [0, -200, 0],
                 }}
                 transition={{ 
-                  duration: 60, 
+                  duration: 40, 
                   repeat: Infinity, 
                   ease: "linear" 
                 }}
-                className="grid grid-cols-4 gap-2 p-2"
+                className="grid grid-cols-4 gap-1 p-1"
               >
-                {[...posters, ...posters, ...posters].map((url, i) => (
-                  <div key={i} className="aspect-[2/3] rounded-xl overflow-hidden grayscale hover:grayscale-0 transition-all duration-1000">
+                {[...posters, ...posters].map((url, i) => (
+                  <div key={i} className="aspect-[2/3] rounded-lg overflow-hidden">
                     <img src={url} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                   </div>
                 ))}
               </motion.div>
-              <div className="absolute inset-0 bg-gradient-to-b from-[#0a0502] via-transparent to-[#0a0502]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-[#0a0502]/30 via-[#0a0502]/50 to-[#0a0502]/80" />
             </div>
 
-            <div className="relative p-10 md:p-14 space-y-10">
+            <div className="relative p-8 md:p-10 space-y-8">
               {/* Header */}
-              <div className="flex flex-col items-center gap-6">
+              <div className="flex flex-col items-center gap-4">
                 <button 
                   onClick={onClose}
-                  className="absolute top-8 right-8 p-3 bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/5"
+                  className="absolute top-6 right-6 p-2 bg-white/5 hover:bg-white/10 rounded-full transition-all"
                 >
                   <X size={20} className="text-white/40" />
                 </button>
                 
-                <div className="flex flex-col items-center gap-4 text-white">
-                  <div className="w-16 h-16 bg-[#ff4e00] rounded-3xl flex items-center justify-center shadow-[0_0_40px_rgba(255,78,0,0.4)] transform -rotate-6">
-                    <LogIn size={32} fill="white" className="text-white" />
+                <div className="flex items-center gap-3 text-white">
+                  <div className="w-10 h-10 bg-[#ff4e00] rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(255,78,0,0.5)]">
+                    <LogIn size={20} fill="white" />
                   </div>
-                  <div className="text-center">
-                    <h2 className="text-4xl font-black uppercase tracking-[-0.05em] italic">CINEQUEST</h2>
-                    <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mt-2">Вход в киновселенную</p>
-                  </div>
+                  <h2 className="text-3xl font-black uppercase tracking-tighter">ВХОД</h2>
                 </div>
               </div>
 
               {/* Tabs */}
-              <div className="flex bg-white/5 p-1.5 rounded-[24px] border border-white/5">
+              <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5">
                 <button 
                   onClick={() => setMode('login')}
                   className={cn(
-                    "flex-1 py-4 rounded-[18px] font-black text-[11px] uppercase tracking-[0.2em] transition-all",
-                    mode === 'login' ? "bg-white text-black shadow-2xl" : "text-white/20 hover:text-white/40"
+                    "flex-1 py-3 rounded-xl font-bold text-sm transition-all",
+                    mode === 'login' ? "bg-white/10 text-white shadow-lg" : "text-white/40 hover:text-white/60"
                   )}
                 >
                   Войти
@@ -109,8 +127,8 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 <button 
                   onClick={() => setMode('register')}
                   className={cn(
-                    "flex-1 py-4 rounded-[18px] font-black text-[11px] uppercase tracking-[0.2em] transition-all",
-                    mode === 'register' ? "bg-white text-black shadow-2xl" : "text-white/20 hover:text-white/40"
+                    "flex-1 py-3 rounded-xl font-bold text-sm transition-all",
+                    mode === 'register' ? "bg-white/10 text-white shadow-lg" : "text-white/40 hover:text-white/60"
                   )}
                 >
                   Регистрация
@@ -118,61 +136,78 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
               </div>
 
               {/* Form */}
-              <div className="space-y-5">
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSubmit();
+                }}
+                className="space-y-4"
+              >
                 <div className="relative group">
-                  <Mail className="absolute left-6 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-[#ff4e00] transition-colors" size={20} />
+                  <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-[#ff4e00] transition-colors" size={20} />
                   <input 
                     type="email" 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="E-MAIL"
-                    className="w-full bg-white/[0.03] border border-white/5 rounded-[24px] py-6 pl-16 pr-8 text-white placeholder:text-white/10 focus:outline-none focus:border-[#ff4e00]/50 transition-all font-black text-xs tracking-widest"
+                    placeholder="Введите E-mail"
+                    required
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-6 text-white placeholder:text-white/20 focus:outline-none focus:border-[#ff4e00]/50 transition-all font-medium"
                   />
                 </div>
                 <div className="relative group">
-                  <Lock className="absolute left-6 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-[#ff4e00] transition-colors" size={20} />
+                  <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-[#ff4e00] transition-colors" size={20} />
                   <input 
                     type="password" 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="ПАРОЛЬ"
-                    className="w-full bg-white/[0.03] border border-white/5 rounded-[24px] py-6 pl-16 pr-8 text-white placeholder:text-white/10 focus:outline-none focus:border-[#ff4e00]/50 transition-all font-black text-xs tracking-widest"
+                    placeholder="Введите пароль"
+                    required
+                    minLength={6}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-6 text-white placeholder:text-white/20 focus:outline-none focus:border-[#ff4e00]/50 transition-all font-medium"
                   />
                 </div>
                 <div className="flex justify-end">
-                  <button className="text-[10px] font-black text-white/10 hover:text-[#ff4e00] uppercase tracking-widest transition-colors">Забыли пароль?</button>
+                  <button type="button" className="text-white/40 hover:text-white text-xs font-bold transition-colors">Забыл пароль</button>
                 </div>
+
+                {/* Action Button */}
+                <button 
+                  type="submit"
+                  disabled={isLoading}
+                  className={cn(
+                    "w-full bg-[#ff4e00] hover:bg-[#ff6a26] text-white py-5 rounded-[24px] font-black uppercase tracking-widest transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_10px_30px_rgba(255,78,0,0.3)] flex items-center justify-center gap-3",
+                    isLoading && "opacity-70 cursor-not-allowed"
+                  )}
+                >
+                  {isLoading && <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />}
+                  {mode === 'login' ? 'ВОЙТИ' : 'СОЗДАТЬ АККАУНТ'}
+                </button>
+              </form>
+
+              {/* Divider */}
+              <div className="relative flex items-center gap-4">
+                <div className="flex-1 h-px bg-white/10" />
+                <span className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">ДРУГИЕ СПОСОБЫ</span>
+                <div className="flex-1 h-px bg-white/10" />
               </div>
 
-              {/* Action Button */}
-              <button 
-                className="w-full bg-[#ff4e00] hover:bg-[#ff6a26] text-white py-6 rounded-[28px] font-black uppercase tracking-[0.3em] text-xs transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_20px_40px_rgba(255,78,0,0.3)]"
-              >
-                {mode === 'login' ? 'АВТОРИЗАЦИЯ' : 'РЕГИСТРАЦИЯ'}
-              </button>
-
               {/* Social Login */}
-              <div className="space-y-6">
-                <div className="relative flex items-center gap-4">
-                  <div className="flex-1 h-px bg-white/5" />
-                  <span className="text-[9px] font-black text-white/10 uppercase tracking-[0.4em]">БЫСТРЫЙ ВХОД</span>
-                  <div className="flex-1 h-px bg-white/5" />
-                </div>
-
-                <div className="flex justify-center gap-4">
-                  <button 
-                    onClick={handleGoogleLogin}
-                    className="w-16 h-16 bg-white/[0.03] hover:bg-white/[0.08] rounded-[24px] flex items-center justify-center transition-all border border-white/5 hover:border-[#ff4e00]/50 group"
-                  >
-                    <Chrome size={24} className="text-white/20 group-hover:text-[#ff4e00] transition-colors" />
-                  </button>
-                  <button className="w-16 h-16 bg-white/[0.03] hover:bg-white/[0.08] rounded-[24px] flex items-center justify-center transition-all border border-white/5 hover:border-[#ff4e00]/50 group">
-                    <MessageCircle size={24} className="text-white/20 group-hover:text-[#ff4e00] transition-colors" />
-                  </button>
-                  <button className="w-16 h-16 bg-white/[0.03] hover:bg-white/[0.08] rounded-[24px] flex items-center justify-center transition-all border border-white/5 hover:border-[#ff4e00]/50 group">
-                    <Send size={24} className="text-white/20 group-hover:text-[#ff4e00] transition-colors" />
-                  </button>
-                </div>
+              <div className="flex justify-center gap-4">
+                <button 
+                  onClick={handleGoogleLogin}
+                  className="w-14 h-14 bg-white/5 hover:bg-white/10 rounded-2xl flex items-center justify-center transition-all border border-white/5 hover:border-white/20 group"
+                >
+                  <Chrome size={24} className="text-white/40 group-hover:text-white transition-colors" />
+                </button>
+                <button className="w-14 h-14 bg-white/5 hover:bg-white/10 rounded-2xl flex items-center justify-center transition-all border border-white/5 hover:border-white/20 group">
+                  <MessageCircle size={24} className="text-white/40 group-hover:text-white transition-colors" />
+                </button>
+                <button className="w-14 h-14 bg-white/5 hover:bg-white/10 rounded-2xl flex items-center justify-center transition-all border border-white/5 hover:border-white/20 group">
+                  <Send size={24} className="text-white/40 group-hover:text-white transition-colors" />
+                </button>
+                <button className="w-14 h-14 bg-white/5 hover:bg-white/10 rounded-2xl flex items-center justify-center transition-all border border-white/5 hover:border-white/20 group">
+                  <Gamepad2 size={24} className="text-white/40 group-hover:text-white transition-colors" />
+                </button>
               </div>
             </div>
           </motion.div>

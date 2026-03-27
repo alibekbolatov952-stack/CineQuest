@@ -71,8 +71,8 @@ export default function GenrePage() {
             key={movie.id} 
             movie={movie} 
             genres={genres}
-            isFavorite={favorites.includes(movie.id.toString())}
-            onToggleFavorite={(id) => toggleFavorite(id.toString())}
+            isFavorite={movie.id ? favorites.includes(movie.id.toString()) : false}
+            onToggleFavorite={(id) => id && toggleFavorite(id.toString())}
           />
         ))}
       </div>

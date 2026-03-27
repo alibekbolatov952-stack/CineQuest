@@ -90,6 +90,12 @@ export default function Movie() {
           }
         }
         
+        if (!details) {
+          setMovie(null);
+          setLoading(false);
+          return;
+        }
+
         setMovie(details);
         
         const recs = await getMovieRecommendations(id, type);
@@ -307,7 +313,7 @@ export default function Movie() {
             <div className="w-full h-full max-w-6xl flex flex-col gap-4">
               <ErrorBoundary>
                 <AnimePlayer 
-                  tmdbId={movie.id.toString()} 
+                  tmdbId={movie.id?.toString()} 
                   shikimoriId={movie.external_ids?.shikimori_id}
                   imdbId={movie.external_ids?.imdb_id}
                   title={movie.title || movie.name}

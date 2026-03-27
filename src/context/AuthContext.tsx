@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, User, signInWithPopup, signOut } from 'firebase/auth';
+import { onAuthStateChanged, User, signInWithPopup, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot, serverTimestamp, collection, query, where, getDocs, addDoc, deleteDoc } from 'firebase/firestore';
 import { auth, db, googleProvider, handleFirestoreError, OperationType } from '../lib/firebase';
 import { UserProfile } from '../types';
@@ -13,6 +13,8 @@ interface AuthContextType {
   isAuthModalOpen: boolean;
   setIsAuthModalOpen: (open: boolean) => void;
   login: () => Promise<void>;
+  loginWithEmail: (email: string, password: string) => Promise<void>;
+  registerWithEmail: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   updatePoints: (points: number) => Promise<void>;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
@@ -130,6 +132,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loginWithEmail = async (email: string, password: string) => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      toast.success('Вы успешно вошли!');
+    } catch (error: any) {
+      console.error('Email login error:', error);
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        toast.error('Неверный E-mail или пароль');
+      } else if (error.code === 'auth/invalid-email') {
+        toast.error('Некорректный E-mail');
+      } else {
+        toast.error(`Ошибка входа: ${error.message}`);
+      }
+    }
+  };
+
+  const registerWithEmail = async (email: string, password: string) => {
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      toast.success('Аккаунт успешно создан!');
+    } catch (error: any) {
+      console.error('Email registration error:', error);
+      if (error.code === 'auth/email-already-in-use') {
+        toast.error('Этот E-mail уже используется');
+      } else if (error.code === 'auth/weak-password') {
+        toast.error('Пароль слишком слабый (минимум 6 символов)');
+      } else if (error.code === 'auth/invalid-email') {
+        toast.error('Некорректный E-mail');
+      } else {
+        toast.error(`Ошибка регистрации: ${error.message}`);
+      }
+    }
+  };
+
   const logout = async () => {
     try {
       await signOut(auth);
@@ -212,7 +248,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, favorites, loading, isAuthModalOpen, setIsAuthModalOpen, login, logout, updatePoints, updateProfile, spendTokens, toggleFavorite }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      profile, 
+      favorites, 
+      loading, 
+      isAuthModalOpen, 
+      setIsAuthModalOpen, 
+      login, 
+      loginWithEmail,
+      registerWithEmail,
+      logout, 
+      updatePoints, 
+      updateProfile, 
+      spendTokens, 
+      toggleFavorite 
+    }}>
       {children}
     </AuthContext.Provider>
   );

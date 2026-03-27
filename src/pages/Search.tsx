@@ -179,6 +179,7 @@ export default function Search() {
                 <MovieCard 
                   key={movie.id} 
                   movie={movie} 
+                  genres={genres}
                   isFavorite={favorites.includes(movie.id.toString())}
                   onToggleFavorite={(id) => toggleFavorite(id.toString())}
                 />

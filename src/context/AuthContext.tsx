@@ -10,9 +10,13 @@ interface AuthContextType {
   profile: UserProfile | null;
   favorites: string[]; // Array of movie IDs
   loading: boolean;
+  isAuthModalOpen: boolean;
+  setIsAuthModalOpen: (open: boolean) => void;
   login: () => Promise<void>;
   logout: () => Promise<void>;
   updatePoints: (points: number) => Promise<void>;
+  updateProfile: (data: Partial<UserProfile>) => Promise<void>;
+  spendTokens: (amount: number) => Promise<boolean>;
   toggleFavorite: (movieId: string) => Promise<void>;
 }
 
@@ -23,6 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   useEffect(() => {
     let unsubscribeProfile: (() => void) | null = null;
@@ -149,6 +154,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateProfile = async (data: Partial<UserProfile>) => {
+    if (!user) return;
+    const userDocRef = doc(db, 'users', user.uid);
+    try {
+      await setDoc(userDocRef, data, { merge: true });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `users/${user.uid}`);
+    }
+  };
+
+  const spendTokens = async (amount: number): Promise<boolean> => {
+    if (!user || !profile) return false;
+    if (profile.tokens < amount) {
+      toast.error('Недостаточно жетонов!');
+      return false;
+    }
+
+    const userDocRef = doc(db, 'users', user.uid);
+    try {
+      await setDoc(userDocRef, { 
+        tokens: profile.tokens - amount
+      }, { merge: true });
+      return true;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `users/${user.uid}`);
+      return false;
+    }
+  };
+
   const toggleFavorite = async (movieId: string) => {
     if (!user) {
       toast.error('Войдите, чтобы добавить в избранное');
@@ -178,7 +212,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, favorites, loading, login, logout, updatePoints, toggleFavorite }}>
+    <AuthContext.Provider value={{ user, profile, favorites, loading, isAuthModalOpen, setIsAuthModalOpen, login, logout, updatePoints, updateProfile, spendTokens, toggleFavorite }}>
       {children}
     </AuthContext.Provider>
   );

@@ -3,20 +3,21 @@ import { useAuth } from '../context/AuthContext';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { collection, query, where, getDocs, doc, getDoc, updateDoc, deleteDoc, writeBatch, onSnapshot } from 'firebase/firestore';
 import { getMovieDetails } from '../lib/tmdb';
-import { User, Settings, Heart, Clock, Trophy, Zap, Star, ShieldAlert, LogOut, Edit3, ChevronRight, LayoutGrid, List, X, Check, Loader2, Camera, Bell, Globe, Lock, Trash2 } from 'lucide-react';
+import { User, Settings, Heart, Clock, Trophy, Zap, Star, ShieldAlert, LogOut, Edit3, ChevronRight, LayoutGrid, List, X, Check, Loader2, Camera, Bell, Globe, Lock, Trash2, ShoppingBag, Sparkles, Crown, Image as ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import MovieCard from '../components/MovieCard';
 import { cn } from '../lib/utils';
 import { toast } from 'sonner';
 
 export default function Profile() {
-  const { user, profile, logout, updatePoints, favorites: favIds, toggleFavorite } = useAuth();
+  const { user, profile, logout, updatePoints, updateProfile, spendTokens, favorites: favIds, toggleFavorite } = useAuth();
   const [favorites, setFavorites] = useState<any[]>([]);
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'favorites' | 'history' | 'achievements'>('favorites');
+  const [activeTab, setActiveTab] = useState<'favorites' | 'history' | 'achievements' | 'market'>('favorites');
   const [hasSetDefaultTab, setHasSetDefaultTab] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [purchasingId, setPurchasingId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [editPhoto, setEditPhoto] = useState('');
@@ -214,6 +215,104 @@ export default function Profile() {
     );
   }
 
+  const shopItems = [
+    {
+      id: 'vip',
+      title: 'VIP Статус',
+      description: 'Особый статус в профиле и доступ к эксклюзивным функциям',
+      price: 100,
+      icon: Crown,
+      color: 'text-yellow-400',
+      bg: 'bg-yellow-400/10',
+      action: async () => {
+        if (profile?.status === 'vip') {
+          toast.error('У вас уже есть VIP статус!');
+          return;
+        }
+        setPurchasingId('vip');
+        try {
+          const success = await spendTokens(100);
+          if (success) {
+            await updateProfile({ status: 'vip' });
+            toast.success('Поздравляем! Теперь вы VIP!');
+          }
+        } finally {
+          setPurchasingId(null);
+        }
+      }
+    },
+    {
+      id: 'golden_frame',
+      title: 'Золотая рамка',
+      description: 'Уникальное оформление вашего аватара в комментариях',
+      price: 50,
+      icon: Sparkles,
+      color: 'text-amber-500',
+      bg: 'bg-amber-500/10',
+      action: async () => {
+        if (profile?.achievements?.includes('golden_frame')) {
+          toast.error('У вас уже есть этот предмет!');
+          return;
+        }
+        setPurchasingId('golden_frame');
+        try {
+          const success = await spendTokens(50);
+          if (success) {
+            await updateProfile({ achievements: [...(profile?.achievements || []), 'golden_frame'] });
+            toast.success('Золотая рамка разблокирована!');
+          }
+        } finally {
+          setPurchasingId(null);
+        }
+      }
+    },
+    {
+      id: 'secret_avatar',
+      title: 'Секретный аватар',
+      description: 'Набор эксклюзивных аватаров для вашего профиля',
+      price: 30,
+      icon: ImageIcon,
+      color: 'text-purple-400',
+      bg: 'bg-purple-400/10',
+      action: async () => {
+        if (profile?.achievements?.includes('secret_avatar')) {
+          toast.error('У вас уже есть этот предмет!');
+          return;
+        }
+        setPurchasingId('secret_avatar');
+        try {
+          const success = await spendTokens(30);
+          if (success) {
+            await updateProfile({ achievements: [...(profile?.achievements || []), 'secret_avatar'] });
+            toast.success('Секретные аватары разблокированы!');
+          }
+        } finally {
+          setPurchasingId(null);
+        }
+      }
+    },
+    {
+      id: 'points_boost',
+      title: 'Буст очков x2',
+      description: 'Получайте в два раза больше очков за каждое действие в течение 24 часов',
+      price: 20,
+      icon: Zap,
+      color: 'text-blue-400',
+      bg: 'bg-blue-400/10',
+      action: async () => {
+        setPurchasingId('points_boost');
+        try {
+          const success = await spendTokens(20);
+          if (success) {
+            toast.success('Буст очков активирован на 24 часа!');
+          }
+        } finally {
+          setPurchasingId(null);
+        }
+      }
+    }
+  ];
+
   return (
     <div className="space-y-12">
       {/* Profile Header */}
@@ -227,7 +326,7 @@ export default function Profile() {
             <img 
               src={profile.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`} 
               alt="Avatar" 
-              className="w-24 h-24 md:w-40 md:h-40 rounded-[24px] md:rounded-[40px] border-4 border-[#ff4e00] p-1 shadow-2xl shadow-[#ff4e00]/20 object-cover"
+              className="w-24 h-24 md:w-40 md:h-40 rounded-[24px] md:rounded-[40px] shadow-2xl shadow-[#ff4e00]/20 object-cover"
               referrerPolicy="no-referrer"
             />
             <div className="absolute -bottom-1 -right-1 md:-bottom-2 md:-right-2 bg-[#ff4e00] text-white w-8 h-8 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold text-sm md:text-xl border-4 border-[#0a0502] shadow-xl">
@@ -286,7 +385,8 @@ export default function Profile() {
             {[
               { id: 'favorites', label: 'Избранное', icon: Heart, count: favorites.length },
               { id: 'history', label: 'История', icon: Clock, count: history.length },
-              { id: 'achievements', label: 'Достижения', icon: Trophy, count: profile.achievements.length },
+              { id: 'achievements', label: 'Достижения', icon: Trophy, count: profile?.achievements?.length || 0 },
+              { id: 'market', label: 'Маркет', icon: ShoppingBag, count: 4 },
             ].map((tab) => (
               <button 
                 key={tab.id}
@@ -379,6 +479,51 @@ export default function Profile() {
                 <div className="col-span-full flex flex-col items-center justify-center py-24 space-y-4 opacity-40">
                   <Trophy size={64} />
                   <p className="font-bold uppercase tracking-widest text-sm">Достижения скоро появятся</p>
+                </div>
+              )}
+              {activeTab === 'market' && (
+                <div className="col-span-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {shopItems.map((item) => (
+                    <motion.div
+                      key={item.id}
+                      whileHover={{ y: -5 }}
+                      className="bg-white/5 border border-white/10 rounded-3xl p-6 flex flex-col space-y-4 hover:border-[#ff4e00]/30 transition-all"
+                    >
+                      <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center", item.bg)}>
+                        <item.icon className={item.color} size={24} />
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <h3 className="font-bold text-lg">{item.title}</h3>
+                        <p className="text-sm text-white/60 leading-relaxed">{item.description}</p>
+                      </div>
+                      <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                        <div className="flex items-center gap-2">
+                          <Zap size={16} className="text-[#ff4e00]" />
+                          <span className="font-bold">{item.price}</span>
+                        </div>
+                        {purchasingId === item.id ? (
+                          <button
+                            disabled
+                            className="px-4 py-2 bg-white/10 text-white/40 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
+                          >
+                            <motion.div 
+                              animate={{ rotate: 360 }}
+                              transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                              className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                            />
+                            ...
+                          </button>
+                        ) : (item.id === 'vip' ? profile?.status === 'vip' : profile?.achievements?.includes(item.id)) ? null : (
+                          <button
+                            onClick={item.action}
+                            className="px-4 py-2 bg-[#ff4e00] hover:bg-[#ff6a26] text-white rounded-xl text-sm font-bold transition-all active:scale-95"
+                          >
+                            Купить
+                          </button>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
               )}
               {activeTab === 'favorites' && favorites.length === 0 && (

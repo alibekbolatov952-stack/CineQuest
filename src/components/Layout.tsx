@@ -4,9 +4,11 @@ import { useAuth } from '../context/AuthContext';
 import { Home, Search, Heart, User, LogOut, Menu, X, Film, Tv, TrendingUp, Star, Settings, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import { AuthModal } from './AuthModal';
+import BottomNav from './BottomNav';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const { user, profile, login, logout } = useAuth();
+  const { user, profile, login, logout, isAuthModalOpen, setIsAuthModalOpen } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -67,14 +69,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <img 
                   src={profile?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`} 
                   alt="Avatar" 
-                  className="w-10 h-10 rounded-full border-2 border-[#ff4e00] p-0.5"
+                  className="w-10 h-10 rounded-full object-cover"
                   referrerPolicy="no-referrer"
                 />
               </Link>
             </div>
           ) : (
             <button 
-              onClick={login}
+              onClick={() => setIsAuthModalOpen(true)}
               className="bg-[#ff4e00] hover:bg-[#ff6a26] text-white px-6 py-2 rounded-full text-sm font-bold transition-all transform hover:scale-105 active:scale-95"
             >
               ВОЙТИ
@@ -186,6 +188,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </footer>
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </div>
   );
 }

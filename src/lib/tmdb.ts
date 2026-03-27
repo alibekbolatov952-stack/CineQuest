@@ -1,4 +1,4 @@
-const TMDB_API_KEY = process.env.VITE_TMDB_API_KEY || 'b8bfe45f5fecf06062319ab474a1b155';
+const TMDB_API_KEY = (import.meta.env.VITE_TMDB_API_KEY as string) || 'b8bfe45f5fecf06062319ab474a1b155';
 const BASE_URL = 'https://api.themoviedb.org/3';
 
 export interface Movie {
@@ -10,10 +10,12 @@ export interface Movie {
   release_date: string;
   vote_average: number;
   genre_ids: number[];
+  media_type?: 'movie' | 'tv';
+  popularity?: number;
 }
 
 export async function fetchFromTMDB(endpoint: string, params: Record<string, string> = {}) {
-  if (!TMDB_API_KEY) {
+  if (!TMDB_API_KEY || TMDB_API_KEY === 'MY_TMDB_API_KEY') {
     console.warn('TMDB_API_KEY is not set. Please add it to your environment variables.');
     return null;
   }
@@ -22,9 +24,18 @@ export async function fetchFromTMDB(endpoint: string, params: Record<string, str
     language: 'ru-RU',
     ...params,
   });
-  const response = await fetch(`${BASE_URL}${endpoint}?${queryParams}`);
-  if (!response.ok) throw new Error('Failed to fetch from TMDB');
-  return response.json();
+  try {
+    const response = await fetch(`${BASE_URL}${endpoint}?${queryParams}`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('TMDB API Error:', response.status, errorData);
+      throw new Error(`Failed to fetch from TMDB: ${response.status} ${errorData.status_message || ''}`);
+    }
+    return response.json();
+  } catch (error) {
+    console.error('TMDB Fetch Error:', error);
+    return null; // Return null instead of throwing to prevent app crash
+  }
 }
 
 export async function getPopularMovies() {
@@ -61,7 +72,7 @@ export async function searchMovies(query: string) {
 }
 
 export async function getMovieDetails(id: string, type: 'movie' | 'tv' = 'movie') {
-  return fetchFromTMDB(`/${type}/${id}`, { append_to_response: 'external_ids' });
+  return fetchFromTMDB(`/${type}/${id}`, { append_to_response: 'external_ids,credits' });
 }
 
 export async function getMovieVideos(id: string, type: 'movie' | 'tv' = 'movie') {
@@ -70,4 +81,17 @@ export async function getMovieVideos(id: string, type: 'movie' | 'tv' = 'movie')
 
 export async function getMovieRecommendations(id: string, type: 'movie' | 'tv' = 'movie') {
   return fetchFromTMDB(`/${type}/${id}/recommendations`);
+}
+
+export async function getGenres() {
+  const movieGenres = await fetchFromTMDB('/genre/movie/list');
+  const tvGenres = await fetchFromTMDB('/genre/tv/list');
+  // Combine and remove duplicates
+  const allGenres = [...(movieGenres?.genres || []), ...(tvGenres?.genres || [])];
+  const uniqueGenres = Array.from(new Map(allGenres.map(item => [item.id, item])).values());
+  return uniqueGenres;
+}
+
+export async function getMoviesByGenre(genreId: number) {
+  return fetchFromTMDB('/discover/movie', { with_genres: genreId.toString(), sort_by: 'popularity.desc' });
 }

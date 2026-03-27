@@ -123,7 +123,7 @@ service cloud.firestore {
     }
 
     function isValidComment(data) {
-      return hasOnlyAllowedFields(['userId', 'movieId', 'text', 'createdAt', 'likes']) &&
+      return hasOnlyAllowedFields(['userId', 'movieId', 'text', 'createdAt', 'likes', 'userDisplayName', 'userPhotoURL']) &&
              data.userId == request.auth.uid &&
              data.movieId is string &&
              data.text is string && data.text.size() > 0 && data.text.size() < 1000;

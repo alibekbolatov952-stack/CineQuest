@@ -7,6 +7,7 @@ export interface UserProfile {
   points: number;
   tokens: number;
   level: number;
+  status?: 'vip' | 'regular';
   achievements: string[];
   createdAt: any;
   settings?: {

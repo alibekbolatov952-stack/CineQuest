@@ -12,20 +12,29 @@ interface MovieCardProps {
     vote_average: number;
     release_date: string;
     overview?: string;
+    media_type?: 'movie' | 'tv';
+    genre_ids?: number[];
   };
+  genres?: { id: number; name: string }[];
   isFavorite?: boolean;
   onToggleFavorite?: (id: number) => void;
   variant?: 'grid' | 'list';
 }
 
-export default function MovieCard({ movie, isFavorite, onToggleFavorite, variant = 'grid' }: MovieCardProps) {
+export default function MovieCard({ movie, genres, isFavorite, onToggleFavorite, variant = 'grid' }: MovieCardProps) {
+  const watchUrl = movie.media_type ? `/watch/${movie.media_type}/${movie.id}` : `/movie/${movie.id}`;
+  
+  const movieGenres = movie.genre_ids && genres 
+    ? movie.genre_ids.map(id => genres.find(g => g.id === id)?.name).filter(Boolean)
+    : [];
+
   if (variant === 'list') {
     return (
       <motion.div 
         whileHover={{ x: 10 }}
         className="group relative bg-white/5 rounded-3xl overflow-hidden border border-white/5 hover:border-[#ff4e00]/50 transition-all duration-500 flex gap-6 p-4"
       >
-        <Link to={`/movie/${movie.id}`} className="shrink-0 w-32 aspect-[2/3] relative rounded-2xl overflow-hidden">
+        <Link to={watchUrl} className="shrink-0 w-32 aspect-[2/3] relative rounded-2xl overflow-hidden">
           <img 
             src={`https://image.tmdb.org/t/p/w300${movie.poster_path}`} 
             alt={movie.title}
@@ -38,14 +47,17 @@ export default function MovieCard({ movie, isFavorite, onToggleFavorite, variant
         </Link>
         
         <div className="flex-1 flex flex-col justify-center space-y-3">
-          <div className="flex items-start justify-between gap-4">
-            <Link to={`/movie/${movie.id}`} className="space-y-1">
+          <div className="flex items-center justify-between gap-4">
+            <Link to={watchUrl} className="space-y-1 flex-1">
               <h3 className="font-bold text-xl group-hover:text-[#ff4e00] transition-colors uppercase tracking-tight leading-none">{movie.title}</h3>
               <div className="flex items-center gap-3">
                 <span className="text-xs text-white/40 font-bold uppercase tracking-widest">{movie.release_date?.split('-')[0] || 'N/A'}</span>
+                {movieGenres.length > 0 && (
+                  <span className="text-xs text-[#ff4e00] font-black uppercase tracking-widest truncate max-w-[150px]">{movieGenres[0]}</span>
+                )}
                 <div className="flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-full border border-white/5">
                   <Star size={10} className="text-[#ff4e00]" fill="#ff4e00" />
-                  <span className="text-[10px] font-bold tracking-widest">{movie.vote_average.toFixed(1)}</span>
+                  <span className="text-[10px] font-bold tracking-widest">{(movie.vote_average || 0).toFixed(1)}</span>
                 </div>
               </div>
             </Link>
@@ -72,7 +84,7 @@ export default function MovieCard({ movie, isFavorite, onToggleFavorite, variant
       whileHover={{ y: -10 }}
       className="group relative bg-white/5 rounded-2xl overflow-hidden border border-white/5 hover:border-[#ff4e00]/50 transition-all duration-500 shadow-2xl shadow-black/40"
     >
-      <Link to={`/movie/${movie.id}`}>
+      <Link to={watchUrl}>
         <div className="aspect-[2/3] relative overflow-hidden">
           <img 
             src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} 
@@ -86,28 +98,43 @@ export default function MovieCard({ movie, isFavorite, onToggleFavorite, variant
             </div>
           </div>
           
-          <div className="absolute top-4 left-4 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1.5 rounded-full border border-white/10">
+          <div className="absolute top-4 left-4 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1.5 rounded-full border border-white/10 z-10">
             <Star size={14} className="text-[#ff4e00]" fill="#ff4e00" />
-            <span className="text-xs font-bold tracking-widest">{movie.vote_average.toFixed(1)}</span>
+            <span className="text-xs font-bold tracking-widest">{(movie.vote_average || 0).toFixed(1)}</span>
           </div>
         </div>
       </Link>
 
+      <button 
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onToggleFavorite?.(movie.id);
+        }}
+        className={cn(
+          "absolute top-4 right-4 p-2.5 rounded-2xl backdrop-blur-md transition-all duration-300 transform hover:scale-110 active:scale-95 z-20 border",
+          isFavorite 
+            ? "bg-[#ff4e00] text-white border-[#ff4e00] shadow-[0_0_20px_rgba(255,78,0,0.4)]" 
+            : "bg-black/40 text-white/60 border-white/10 hover:text-white hover:bg-black/60"
+        )}
+      >
+        <Heart size={18} fill={isFavorite ? "white" : "none"} />
+      </button>
+
       <div className="p-4 space-y-2">
         <div className="flex items-start justify-between gap-2">
-          <Link to={`/movie/${movie.id}`} className="flex-1">
+          <Link to={watchUrl} className="flex-1">
             <h3 className="font-bold text-sm line-clamp-1 group-hover:text-[#ff4e00] transition-colors uppercase tracking-tight">{movie.title}</h3>
-            <p className="text-[10px] text-white/40 font-medium uppercase tracking-widest">{movie.release_date?.split('-')[0] || 'N/A'}</p>
+            <div className="flex items-center gap-2">
+              <p className="text-[10px] text-white/40 font-medium uppercase tracking-widest">{movie.release_date?.split('-')[0] || 'N/A'}</p>
+              {movieGenres.length > 0 && (
+                <>
+                  <span className="w-1 h-1 bg-white/20 rounded-full" />
+                  <p className="text-[10px] text-[#ff4e00] font-black uppercase tracking-widest truncate">{movieGenres[0]}</p>
+                </>
+              )}
+            </div>
           </Link>
-          <button 
-            onClick={() => onToggleFavorite?.(movie.id)}
-            className={cn(
-              "p-2 rounded-xl border border-white/5 transition-all duration-300 transform hover:scale-110 active:scale-95",
-              isFavorite ? "bg-[#ff4e00] text-white border-[#ff4e00]" : "bg-white/5 text-white/40 hover:text-white hover:bg-white/10"
-            )}
-          >
-            <Heart size={16} fill={isFavorite ? "white" : "none"} />
-          </button>
         </div>
       </div>
     </motion.div>
